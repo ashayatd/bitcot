@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const styles = {
   container: {
@@ -23,7 +24,8 @@ const styles = {
 function Landing() {
   return (
     <div style={styles.container}>
-      <p style={styles.message}>Kindly visit login or signup</p>
+      <p style={styles.message}>Kindly visit <Link to="/login">Login</Link> <Link to="/signup">Signup</Link></p>
+      
     </div>
   );
 }

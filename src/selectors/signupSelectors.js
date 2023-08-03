@@ -1,0 +1,1 @@
+export const selectSignupFormData = (state) => state.signup.formData;
