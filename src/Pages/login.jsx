@@ -1,8 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useSelector  } from "react-redux";
+import { useJwt } from "react-jwt";
 
 function Login() {
+
+  const secretKey = 'ashaytamrakar@123';
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const email_State = useSelector(state => state.user.email);
+  const password_State = useSelector(state => state.user.password);
+
+  console.log(email_State, password_State );
+
+  const Navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preveventDefault();
+    console.log("abcd");
+    if (email === email_State && password === password_State) {
+      const token = useJwt.sign({ email }, secretKey, { expiresIn: '1h' });
+
+      // Store the token in localStorage
+      localStorage.setItem("token", token);
+
+      // Redirect to a protected route
+      Navigate("/product");
+    } else {
+      alert("Invalid email or password");
+    }
+  };
+
   return (
     <div className="App">
       <div id="wrapper">
@@ -23,11 +54,11 @@ function Login() {
                           </Link>
                         </h6>
                       </div>
-                      <form>
+                      <form onSubmit={handleSubmit}>
                         <div className="form_wrapper">
                           <div className="mb-4">
                             <label
-                              htmlFor="exampleFormControlInput1"
+                              htmlFor="email"
                               className="form-label label_modify"
                             >
                               <span className="mendatary">*</span> Email
@@ -35,15 +66,16 @@ function Login() {
                             <input
                               type="email"
                               className="form-control input_modify"
-                              id="exampleFormControlInput1"
+                              id="email"
                               name="email"
                               placeholder="demo@demo.com"
-                              value="" // This should be bound to a state variable
+                              value={email}
+                              onChange={(e)=>{setEmail(e.target.value)}}
                             />
                           </div>
                           <div className="mb-4">
                             <label
-                              htmlFor="exampleFormControlInput2"
+                              htmlFor="password"
                               className="form-label label_modify"
                             >
                               {" "}
@@ -52,15 +84,16 @@ function Login() {
                             <input
                               type="password"
                               className="form-control input_modify"
+                              id="password"
                               name="password"
-                              id="exampleFormControlInput1"
                               placeholder="********"
-                              value="" // This should be bound to a state variable
+                              value={password}
+                              onChange={(e)=>{setPassword(e.target.value)}}
                             />
                           </div>
                           <div className="mb-0 auth_btn">
                             <button
-                              type="button"
+                              type="submit"
                               className="theme-btn-primary theme-btn"
                             >
                               Sign In
@@ -81,3 +114,4 @@ function Login() {
 }
 
 export default Login;
+

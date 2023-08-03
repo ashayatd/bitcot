@@ -1,37 +1,38 @@
 import React, { useState } from "react";
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
-import { Link } from "react-router-dom";
-import { useDispatch } from 'react-redux';
-import { submitSignupForm } from '../actions/signupActions';
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setEmail, setPassword } from "../actions/userAction";
 
 function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [useremail, setUseremail] = useState("");
+  const [userpassword, setUserpassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const Navigate = useNavigate();
 
-  const handleSignup = () => {
-   // signup logic here using the email and password state values
-
-  // password and confirm password check
-  if (password !== confirmPassword) {
-    alert("Passwords do not match");
-  }
-
-  // Perform email validation
+  const dispatch = useDispatch();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    alert("Invalid email address");
-  }
-  
-  e.preventDefault();
-  dispatch(submitSignupForm(formData));
 
-  // All checks passed, proceed with signup
-  console.log("Signup button clicked!");
-  console.log("Email:", email);
-  console.log("Password:", password);
+  const handleSignup = (e) => {
+        
+    e.preventDefault();
+    // password and confirm password check
+    if (userpassword !== confirmPassword) {
+      alert("Passwords do not match");
+    } else if (!emailRegex.test(useremail)) {
+      alert("Invalid email address");
+    } else {
+      dispatch(setEmail(useremail));
+      dispatch(setPassword(userpassword));
+      Navigate('/login');
+    }
 
-};
+
+    // All checks passed, proceed with signup
+    console.log("Signup button clicked!");
+    console.log("Email:", useremail);
+    console.log("Password:", userpassword);
+  };
 
   return (
     <div className="App">
@@ -63,8 +64,8 @@ function Signup() {
                               placeholder="demo@gmail.com"
                               className="form-control input_modify"
                               id="exampleFormControlInput1"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
+                              value={useremail}
+                              onChange={(e) => setUseremail(e.target.value)}
                             />
                           </div>
                           <div className="mb-4">
@@ -81,8 +82,8 @@ function Signup() {
                               name="password"
                               className="form-control input_modify"
                               id="exampleFormControlInput2"
-                              value={password}
-                              onChange={(e) => setPassword(e.target.value)}
+                              value={userpassword}
+                              onChange={(e) => setUserpassword(e.target.value)}
                             />
                           </div>
                           <div className="mb-4">
@@ -101,7 +102,9 @@ function Signup() {
                               id="exampleFormControlInput3"
                               placeholder="*****"
                               value={confirmPassword}
-                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              onChange={(e) =>
+                                setConfirmPassword(e.target.value)
+                              }
                             />
                           </div>
                           <div className="mb-0 auth_btn">
