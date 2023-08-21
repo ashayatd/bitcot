@@ -2,17 +2,112 @@ import React from "react";
 import { useState } from "react";
 import '../assets/css/main.css';
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
 import { ReactComponent as Menu } from "../assets/images/icons/icon-menu.svg";
 import { ReactComponent as ProductList } from "../assets/images/icons/Path.svg";
-
+import { ReactComponent as Picture } from "../assets/images/thumbnails/picture.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { addProduct } from "../reducers/productReducer";
 
 function ProductForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [isEcommerceOpen, setIsEcommerceOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("general");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const discard = ()=>{
+    navigate('/product');
+  }
+
+  // Product
+  const [productName, setProductName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [comparePrice, setComparePrice] = useState('');
+  const [costPerItem, setCostPerItem] = useState('');
+  const [taxRate, setTaxRate] = useState('');
+  const [category, setCategory] = useState('');
+  const [status, setStatus] = useState('');
+
+
+ // Variation
+ const [variationArray, setVariationArray] = useState([]);
+  
+ const addEmptyVariant = () => {
+   setVariationArray([...variationArray, { variant: '', price: '', stock: '', productImage: '' }]);
+ };
+
+ const removeVariant = (indexToRemove) => {
+   const updatedVariations = variationArray.filter((_, index) => index !== indexToRemove);
+   setVariationArray(updatedVariations);
+ };
+ const handleVariantChange = (index, field, value) => {
+   const updatedVariationArray = [...variationArray];
+   updatedVariationArray[index][field] = value;
+   setVariationArray(updatedVariationArray);
+ };
+
+
+  // dispatch
+  const dispatch = useDispatch();
+  const Sample_DATA = useSelector(state => state.product.info);
+
+
+  // Get the last ID from the Sample_DATA array
+  const lastId = Sample_DATA.length > 0 ? Sample_DATA[Sample_DATA.length - 1].id : null;
+  const id = String(Number(lastId) + 1);
+  const handleSaveProduct = ()=>{
+      
+    if (
+      productName !== '' &&
+      description !== '' &&
+      price !== '' &&
+      comparePrice !== '' &&
+      costPerItem !== '' &&
+      taxRate !== '' &&
+      category !== '' &&
+      status !== ''
+    ) {
+      // Check if all variants are filled
+      const areVariantsFilled = variationArray.every(
+        (variation) =>
+          variation.variant !== '' &&
+          variation.price !== '' &&
+          variation.stock !== '' &&
+          variation.productImage !== ''
+      );
+    
+      if (areVariantsFilled) {
+        const updatedProduct = {
+          "id" :  id,
+          "productName" : productName,
+          "description": description,
+          "price" : price,
+          "comparePrice":comparePrice,
+          "costPerItem":costPerItem,
+          "taxRate":taxRate,
+          "category":category,
+          "status":status,
+          "variation":variationArray
+        };
+
+        dispatch(addProduct(updatedProduct));
+        navigate('/product');
+      } else {
+        alert("Fill all fields in all variants");
+      }
+    } else {
+      alert("Fill all the required fields");
+    }
+  }
+
+  const logout = ()=>{
+    localStorage.setItem("token",'');
+    navigate('/login');
+  }
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -29,6 +124,7 @@ function ProductForm() {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
 
   return (
     <div className="App">
@@ -113,7 +209,7 @@ function ProductForm() {
                     >
                       <a className="dropdown-item" href="#">
                         {" "}
-                        <i className="flaticon-logout"></i> Logout
+                        <i className="flaticon-logout" onClick={logout}></i> Logout
                       </a>
                     </div>
                   )}
@@ -124,7 +220,7 @@ function ProductForm() {
         </div>
       </div>
       <div className="page-wrapper">
-        <aside className={`sidebar-wrapper custom-scrollbar wow fadeInLeft${isSidebarOpen ? ' open' : ''}`}>
+        <aside className={`sidebar-wrapper custom-scrollbar wow fadeInLeft${isSidebarOpen ? '' : ' open'}`}>
           <div className="sidebar-content-wrapper">
             <ul className="sidebar-list">
               <li
@@ -149,7 +245,7 @@ function ProductForm() {
                       </Link>
                     </li>
                     <li>
-                      <Link to="/addproduct" className="sidebar-link active">
+                      <Link to="/addproduct" className="sidebar-link active" >
                         Add Product
                       </Link>
                     </li>
@@ -189,12 +285,14 @@ function ProductForm() {
                       <button
                         type="button"
                         className="theme-btn btn-outline-secondary"
+                        onClick={discard}
                       >
                         Discard
                       </button>
                       <button
                         type="button"
                         className="theme-btn theme-btn-primary"
+                        onClick={handleSaveProduct}
                       >
                         Save
                       </button>
@@ -270,7 +368,8 @@ function ProductForm() {
                             name="productName"
                             className="form-control"
                             id="productName"
-                            value=""
+                            value={productName}
+                            onChange={(e)=>setProductName(e.target.value)}
                           />
                         </div>
                         <div className="form-group">
@@ -283,6 +382,8 @@ function ProductForm() {
                             className="form-control"
                             name="description"
                             rows="3"
+                            value={description}
+                            onChange={(e)=>{setDescription(e.target.value)}}
                           ></textarea>
                         </div>
                       </div>
@@ -303,7 +404,8 @@ function ProductForm() {
                                 name="price"
                                 className="form-control"
                                 id="price"
-                                value=""
+                                value={price}
+                                onChange={(e)=>{setPrice(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -318,7 +420,8 @@ function ProductForm() {
                                 name="comparePrice"
                                 className="form-control"
                                 id="comparePrice"
-                                value=""
+                                value={comparePrice}
+                                onChange={(e)=>{setComparePrice(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -335,7 +438,8 @@ function ProductForm() {
                                 name="costPerItem"
                                 className="form-control"
                                 id="costPerItem"
-                                value=""
+                                value={costPerItem}
+                                onChange={(e)=>{setCostPerItem(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -349,7 +453,8 @@ function ProductForm() {
                                 name="taxRate"
                                 className="form-control"
                                 id="taxRate"
-                                value=""
+                                value={taxRate}
+                                onChange={(e)=>{setTaxRate(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -367,13 +472,15 @@ function ProductForm() {
                               <label htmlFor="productName">
                                 <span className="text-danger">*</span> Category
                               </label>
-                              <select className="form-control" id="productName">
-                                <option value="">Select</option>
-                                <option value="">Clothe</option>
-                                <option value="">Bags</option>
-                                <option value="">Shoes</option>
-                                <option value="">Watches</option>
-                                <option value="">Devices</option>
+                              <select className="form-control" id="productName" 
+                              value={category}
+                              onChange={(e) => setCategory(e.target.value)}>
+                                <option value="Select">Select</option>
+                                <option value="Clothe">Clothe</option>
+                                <option value="Bags">Bags</option>
+                                <option value="Shoes">Shoes</option>
+                                <option value="Watches">Watches</option>
+                                <option value="Devices">Devices</option>
                               </select>
                             </div>
                           </div>
@@ -382,11 +489,13 @@ function ProductForm() {
                               <label htmlFor="Description">
                                 <span className="text-danger">*</span> Status
                               </label>
-                              <select className="form-control" id="productName">
-                                <option value="">Select</option>
-                                <option value="">In stock</option>
-                                <option value="">Limited stock</option>
-                                <option value="">Out of stock</option>
+                              <select className="form-control" id="productName"
+                              value={status}
+                              onChange={(e) => setStatus(e.target.value)}>
+                                <option value="Select">Select</option>
+                                <option value="In stock">In stock</option>
+                                <option value="Limited stock">Limited stock</option>
+                                <option value="Out of stock">Out of stock</option>
                               </select>
                             </div>
                           </div>
@@ -411,130 +520,78 @@ function ProductForm() {
                           Add A Custome Variat Options For Your Product, Like
                           Different Sizes Or Colors.
                         </p>
-                        <div className="">
-                          <div className="row">
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Variant
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variant"
-                                  className="form-control"
-                                  id="productName"
-                                  value=""
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Price
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  id="productName"
-                                  value=""
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Stock
-                                  keeping unit
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  id="productName"
-                                  value=""
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="form-group uploader-wrapper">
-                          <label htmlFor="Description">
-                            <span className="text-danger">*</span> Upload Image
-                          </label>
-                          <div className="uploader-wrapper-inner">
-                            <img
-                              src="assets/images/thumbnails/picture.svg"
-                              alt="pictures"
-                            />
-                            <input type="file" />
-                            Click or drag file to upload
-                          </div>
-                        </div>
 
-                        <div className="isMinus">
-                          <div className="row">
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Variant
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variant"
-                                  className="form-control"
-                                  id="productName"
-                                  value=""
-                                />
+                        {
+                       variationArray.map((variation, index) => (
+                        <div key={index}>
+                           <div className="isMinus">
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label htmlFor="productName">
+                                        <span className="text-danger">*</span> Variant
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="variant"
+                                        className="form-control"
+                                        value={variation.variant}
+                  onChange={(e) => handleVariantChange(index, 'variant', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label htmlFor="productName">
+                                        <span className="text-danger">*</span> Price
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="variantPrice"
+                                        className="form-control"
+                                        value={variation.price}
+                  onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label htmlFor="productName">
+                                        <span className="text-danger">*</span> Stock
+                                        keeping unit
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="variantPrice"
+                                        className="form-control"
+                                        value={variation.stock}
+            onChange={(e) => handleVariantChange(index, 'stock', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="removeSpan"
+                                onClick={() => removeVariant(index)}>-</span>
                               </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Price
+                              <div className="form-group uploader-wrapper">
+                                <label htmlFor="Description">
+                                  <span className="text-danger">*</span> Upload Image
                                 </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  id="productName"
-                                  value=""
-                                />
+                                <div className="uploader-wrapper-inner">
+                                  <img
+                                    src={variation.productImage}
+                                    alt="pictures"
+                                  />
+                                  <input type="file" />
+                                </div>
                               </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Stock
-                                  keeping unit
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  id="productName"
-                                  value=""
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <span className="removeSpan">-</span>
-                        </div>
-                        <div className="form-group uploader-wrapper">
-                          <label htmlFor="Description">
-                            <span className="text-danger">*</span> Upload Image
-                          </label>
-                          <div className="uploader-wrapper-inner">
-                            <img
-                              src="assets/images/thumbnails/picture.svg"
-                              alt="pictures"
-                            />
-                            <input type="file" />
-                            Click or drag file to upload
-                          </div>
-                        </div>
+                           </div>
+                             
+                              ))
+                  }
 
-                        <button className="uploader-add-btne" type="button">
+                        {/* here */}
+                        <button className="uploader-add-btne" type="button" onClick={addEmptyVariant}>
                           Add field
                         </button>
                       </div>

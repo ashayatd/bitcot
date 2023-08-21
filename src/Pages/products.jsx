@@ -1,22 +1,35 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useState } from "react";
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
 import { ReactComponent as Menu } from "../assets/images/icons/icon-menu.svg";
 import { ReactComponent as ProductList } from "../assets/images/icons/Path.svg";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { removeProduct } from "../reducers/productReducer";
+import { useNavigate } from "react-router-dom";
+
 
 const App = () => {
+
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
+  const Sample_DATA = useSelector(state => state.product.info);
+
   const [isOpen, setIsOpen] = useState(false);
   const [isEcommerceOpen, setIsEcommerceOpen] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [data, setData] = useState([]);
-  const [openDropdownIndex, setOpenDropdownIndex] = useState(-1);
+  const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
 
-  const toggleDropdown2 = (index) => {
-    setOpenDropdownIndex((prevIndex) => (prevIndex === index ? -1 : index));
+  const logout = ()=>{
+    localStorage.setItem("token",'');
+    navigate('/login');
+  }
+
+  const toggleDropdown2 = (data) => {
+    console.log("state data",data)
+    setOpenDropdownIndex((prevData) => (prevData === data ? null : data));
   };
-
   const handleEcommerceToggle = () => {
     setIsEcommerceOpen(!isEcommerceOpen);
   };
@@ -26,21 +39,10 @@ const App = () => {
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
-
-
-  useEffect(() => {
-    const apiUrl =
-      "https://raw.githubusercontent.com/abdulbitcot/React-Coding-Challenge-Experience/main/sample.json";
-
-    fetch(apiUrl)
-      .then((response) => response.json())
-      .then((result) => {
-        setData(result);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  }, []);
+  const handleRemove =  (id) => {
+    console.log("remove executed..");
+    dispatch(removeProduct(id));
+  };
 
   return (
     <div className="App">
@@ -129,7 +131,7 @@ const App = () => {
                     >
                       <a className="dropdown-item" href="#">
                         {" "}
-                        <i className="flaticon-logout"></i> Logout
+                        <i className="flaticon-logout" onClick={logout}></i> Logout
                       </a>
                     </div>
                   )}
@@ -142,7 +144,7 @@ const App = () => {
       <div className="page-wrapper">
         <aside
           className={`sidebar-wrapper custom-scrollbar wow fadeInLeft${
-            isSidebarOpen ? " open" : ""
+            isSidebarOpen ? "" : " open"
           }`}
         >
           <div className="sidebar-content-wrapper">
@@ -231,13 +233,16 @@ const App = () => {
                           placeholder="Search"
                         />
                       </div>
-                      <select className="custom-select input_modify">
-                        <option selected>All</option>
-                        <option value="">Clothe</option>
-                        <option value="">Bags</option>
-                        <option value="">Shoes</option>
-                        <option value="">Watches</option>
-                        <option value="">Devices</option>
+                      <select
+                        className="custom-select input_modify"
+                        value="all"
+                      >
+                        <option value="all">All</option>
+                        <option value="clothes">Clothes</option>
+                        <option value="bags">Bags</option>
+                        <option value="shoes">Shoes</option>
+                        <option value="watches">Watches</option>
+                        <option value="devices">Devices</option>
                       </select>
                     </div>
                     <div className="filter_btn_wrapper">
@@ -295,8 +300,8 @@ const App = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {data.map((product, index) => (
-                          <tr key={product.id}>
+                        {Sample_DATA.map((data, index) => (
+                          <tr key={data.id}>
                             <td>
                               <label className="checkbox_container text-uppercase">
                                 {index + 1}
@@ -306,21 +311,21 @@ const App = () => {
                               <div className="media align-items-center">
                                 <div className="product_thumb">
                                   <img
-                                    src={product.variation[0].productImage}
+                                    src={data.variation[0].productImage}
                                     alt="Images"
                                   />
                                 </div>
                                 <div className="media-body product_des">
                                   <h6 className="product_name">
-                                    {product.productName}
+                                    {data.productName}
                                   </h6>
                                 </div>
                               </div>
                             </td>
-                            <td className="text_primary">{product.category}</td>
-                            <td>${product.variation[0].price}</td>
-                            <td>{product.variation[0].stock}</td>
-                            <td>{product.status}</td>
+                            <td className="text_primary">{data.category}</td>
+                            <td>${data.variation[0].price}</td>
+                            <td>{data.variation[0].stock}</td>
+                            <td>{data.status}</td>
                             <td className="actions">
                               <div
                                 className={`dropdown dropdown_wrapper ${
@@ -328,25 +333,26 @@ const App = () => {
                                 }`}
                               >
                                 <button
-                                  onClick={() => toggleDropdown2(index)}
+                                  onClick={() => toggleDropdown2(data)}
                                   className="dropdown-toggle"
                                   data-toggle="dropdown"
-                                  aria-expanded={openDropdownIndex === index}
+                                  aria-expanded={openDropdownIndex === data}
                                 >
                                   <img
                                     src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAsQAAALEBxi1JjQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACFSURBVEiJ7ZSxCYAwEEUfWmrhEilTuZMTGTdwB+dwB0FXsNHCiAFBIl4KSR78JnD//nHhICY00FtpafMSWIDNarZvYtSO+alaskHJkdqdoPApzD0brMAAVMAINMD0OmYUKKsgdFxLNtLmivs39Zokk07yBcOVvg3VJOiS/08614+kcx2OHQgqLpVdcUDeAAAAAElFTkSuQmCC"
                                     alt="Donts"
                                   />
                                 </button>
-                                {openDropdownIndex === index && (
+                                {openDropdownIndex === data && (
                                   <div className="dropdown-menu dropdown-menu-right show">
                                     <Link
                                       className="dropdown-item"
-                                      to={`/editproduct/${product.id}`}
+                                      to={'/editproduct'}
+                                      state={{ testvalue: data }}
                                     >
                                       Edit Product
                                     </Link>
-                                    <button className="dropdown-item">
+                                    <button className="dropdown-item" onClick={()=>handleRemove(data.id)}>
                                       Delete
                                     </button>
                                   </div>

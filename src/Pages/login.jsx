@@ -2,33 +2,38 @@ import React, { useState } from "react";
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useSelector  } from "react-redux";
-import { useJwt } from "react-jwt";
+import { useSelector } from "react-redux";
+import { Email, Password } from '../reducers/userReducer';
+import ProductService from "../services/productService";
+
 
 function Login() {
-
-  const secretKey = 'ashaytamrakar@123';
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const email_State = useSelector(state => state.user.email);
-  const password_State = useSelector(state => state.user.password);
-
-  console.log(email_State, password_State );
+  const email_State = useSelector(Email);
+  const password_State = useSelector(Password);
 
   const Navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preveventDefault();
-    console.log("abcd");
+  const generateToken = () => {
+    const min = 46556523;
+    const max = 56556523; // Generating a Token
+    localStorage.setItem("token", Math.floor(Math.random() * (max - min)) + min);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
     if (email === email_State && password === password_State) {
-      const token = useJwt.sign({ email }, secretKey, { expiresIn: '1h' });
+      generateToken();
+      ProductService();
+      console.log("productservice Executed");
+      setTimeout(() => {
+        Navigate('/product');
+      }, 300);
+      
 
-      // Store the token in localStorage
-      localStorage.setItem("token", token);
-
-      // Redirect to a protected route
-      Navigate("/product");
     } else {
       alert("Invalid email or password");
     }
@@ -70,7 +75,10 @@ function Login() {
                               name="email"
                               placeholder="demo@demo.com"
                               value={email}
-                              onChange={(e)=>{setEmail(e.target.value)}}
+                              onChange={(e) => {
+                                setEmail(e.target.value);
+                              }}
+                              required // Add form validation
                             />
                           </div>
                           <div className="mb-4">
@@ -88,7 +96,10 @@ function Login() {
                               name="password"
                               placeholder="********"
                               value={password}
-                              onChange={(e)=>{setPassword(e.target.value)}}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                              }}
+                              required // Add form validation
                             />
                           </div>
                           <div className="mb-0 auth_btn">
@@ -114,4 +125,3 @@ function Login() {
 }
 
 export default Login;
-

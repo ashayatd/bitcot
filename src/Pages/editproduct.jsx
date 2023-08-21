@@ -1,16 +1,56 @@
 import React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
 import { ReactComponent as Menu } from "../assets/images/icons/icon-menu.svg";
 import { ReactComponent as ProductList } from "../assets/images/icons/Path.svg";
+import { updateProduct } from "../reducers/productReducer";
 
 const Editproduct = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const {testvalue} = location.state;
+
+  const discard = ()=>{
+    navigate('/product');
+  }
+
+  console.log(testvalue);
   const [isOpen, setIsOpen] = useState(false);
   const [isEcommerceOpen, setIsEcommerceOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("general");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  //General
+  const [productName, setProductName] = useState(testvalue.productName);
+  const [description, setDescription] = useState(testvalue.description);
+  const [price, setPrice] = useState(testvalue.variation[0].price);
+  const [comparePrice, setComparePrice] = useState('');
+  const [costPerItem, setCostPerItem] = useState('');
+  const [taxRate, setTaxRate] = useState('');
+  const [category, setCategory] = useState(testvalue.category);
+  const [status, setStatus] = useState(testvalue.status);
+
+
+  // Variations
+  const [variationArray, setVariationArray] = useState(testvalue.variation);
+  const addEmptyVariant = () => {
+    setVariationArray([...variationArray, { variant: '', price: '', stock: '', productImage: '' }]);
+  };
+  const removeVariant = (indexToRemove) => {
+    const updatedVariations = variationArray.filter((_, index) => index !== indexToRemove);
+    setVariationArray(updatedVariations);
+  };
+  const handleVariantChange = (index, field, value) => {
+    const updatedVariationArray = [...variationArray];
+    updatedVariationArray[index][field] = value;
+    setVariationArray(updatedVariationArray);
+  };
 
   const handleEcommerceToggle = () => {
     setIsEcommerceOpen(!isEcommerceOpen);
@@ -27,6 +67,60 @@ const Editproduct = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const logout = ()=>{
+    localStorage.setItem("token",'');
+    navigate('/login');
+  }
+
+  const handleSave = () => {
+    
+    if (
+      productName !== '' &&
+      description !== '' &&
+      price !== '' &&
+      comparePrice !== '' &&
+      costPerItem !== '' &&
+      taxRate !== '' &&
+      category !== '' &&
+      status !== ''
+    ) {
+      // Check if all variants are filled
+      const areVariantsFilled = variationArray.every(
+        (variation) =>
+          variation.variant !== '' &&
+          variation.price !== '' &&
+          variation.stock !== '' &&
+          variation.productImage !== ''
+      );
+    
+      if (areVariantsFilled) {
+        const updatedProduct = {
+          "id" :  testvalue.id,
+          "productName" : productName,
+          "description": description,
+          "price" : price,
+          "comparePrice":comparePrice,
+          "costPerItem":costPerItem,
+          "taxRate":taxRate,
+          "category":category,
+          "status":status,
+          "variation":variationArray
+        };
+        const productObj = {
+          id :  testvalue.id ,
+          product : updatedProduct
+        }
+        dispatch(updateProduct(productObj));
+        navigate('/product');
+      } else {
+        alert("Fill all fields in all variants");
+      }
+    } else {
+      alert("Fill all the required fields");
+    }
+
+  }
 
   return (
     <div className="App">
@@ -111,7 +205,7 @@ const Editproduct = () => {
                     >
                       <a className="dropdown-item" href="#">
                         {" "}
-                        <i className="flaticon-logout"></i> Logout
+                        <i className="flaticon-logout" onClick={logout}></i> Logout
                       </a>
                     </div>
                   )}
@@ -191,12 +285,14 @@ const Editproduct = () => {
                       <button
                         type="button"
                         className="theme-btn btn-outline-secondary"
+                        onClick={discard}
                       >
                         Discard
                       </button>
                       <button
                         type="button"
                         className="theme-btn theme-btn-primary"
+                        onClick={handleSave}
                       >
                         Save
                       </button>
@@ -274,7 +370,8 @@ const Editproduct = () => {
                             name="productName"
                             className="form-control"
                             id="productName"
-                            value="Blue Jacket"
+                            value={productName}
+                            onChange={(e)=>{setProductName(e.target.value)}}
                           />
                         </div>
                         <div className="form-group">
@@ -287,6 +384,8 @@ const Editproduct = () => {
                             className="form-control"
                             name="description"
                             rows="3"
+                            value={description}
+                            onChange={(e)=>{setDescription(e.target.value)}}
                           >
                             There are many variations of passages of Lorem Ipsum
                             available.
@@ -310,7 +409,8 @@ const Editproduct = () => {
                                 name="price"
                                 className="form-control"
                                 id="price"
-                                value="5"
+                                value={price}
+                                onChange={(e)=>{setPrice(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -325,7 +425,8 @@ const Editproduct = () => {
                                 name="comparePrice"
                                 className="form-control"
                                 id="comparePrice"
-                                value="30"
+                                value={comparePrice}
+                                onChange={(e)=>{setComparePrice(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -342,7 +443,8 @@ const Editproduct = () => {
                                 name="costPerItem"
                                 className="form-control"
                                 id="costPerItem"
-                                value="10"
+                                value={costPerItem}
+                                onChange={(e)=>{setCostPerItem(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -356,7 +458,8 @@ const Editproduct = () => {
                                 name="taxRate"
                                 className="form-control"
                                 id="taxRate"
-                                value="3"
+                                value={taxRate}
+                                onChange={(e)=>{setTaxRate(e.target.value)}}
                               />
                             </div>
                           </div>
@@ -374,13 +477,15 @@ const Editproduct = () => {
                               <label htmlFor="productName">
                                 <span className="text-danger">*</span> Category
                               </label>
-                              <select className="form-control" id="productName">
-                                <option value="">Select</option>
-                                <option value="">Clothe</option>
-                                <option value="">Bags</option>
-                                <option value="">Shoes</option>
-                                <option value="">Watches</option>
-                                <option value="">Devices</option>
+                              <select className="form-control" id="productName" 
+                              value={category}
+                              onChange={(e)=>{setCategory(e.target.value)}}>
+                                <option value="select">Select</option>
+                                <option value="clothe">Clothe</option>
+                                <option value="bags">Bags</option>
+                                <option value="shoes">Shoes</option>
+                                <option value="watches">Watches</option>
+                                <option value="devices">Devices</option>
                               </select>
                             </div>
                           </div>
@@ -389,11 +494,13 @@ const Editproduct = () => {
                               <label htmlFor="Description">
                                 <span className="text-danger">*</span> Status
                               </label>
-                              <select className="form-control" id="productName">
-                                <option value="">Select</option>
-                                <option value="">In stock</option>
-                                <option value="">Limited stock</option>
-                                <option value="">Out of stock</option>
+                              <select className="form-control" id="productName"
+                              value={status}
+                              onChange={(e)=>{setStatus(e.target.value)}}>
+                                <option value="Select">Select</option>
+                                <option value="In stock">In stock</option>
+                                <option value="Limited stock">Limited stock</option>
+                                <option value="Out of stock">Out of stock</option>
                               </select>
                             </div>
                           </div>
@@ -411,132 +518,91 @@ const Editproduct = () => {
                   aria-labelledby="pills-variation-tab"
                 >
                   <div className="card nav_pills_card">
-                    <div className="card-body">
-                      <div>
-                        <div className="form-title">Variants</div>
-                        <p>
-                          Add A Custome Variat Options For Your Product, Like
-                          Different Sizes Or Colors.
-                        </p>
-                        <div className="">
-                          <div className="row">
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Variant
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variant"
-                                  className="form-control"
-                                  value="black"
-                                />
+                          <div className="card-body">
+                            <div>
+                              <div className="form-title">Variants</div>
+                              <p>
+                                Add A Custome Variat Options For Your Product, Like
+                                Different Sizes Or Colors.
+                              </p>
+                              {
+                       variationArray.map((variation, index) => (
+                        <div key={index}>
+                           <div className="isMinus">
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label htmlFor="productName">
+                                        <span className="text-danger">*</span> Variant
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="variant"
+                                        className="form-control"
+                                        value={variation.variant}
+                  onChange={(e) => handleVariantChange(index, 'variant', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label htmlFor="productName">
+                                        <span className="text-danger">*</span> Price
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="variantPrice"
+                                        className="form-control"
+                                        value={variation.price}
+                  onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <div className="form-group">
+                                      <label htmlFor="productName">
+                                        <span className="text-danger">*</span> Stock
+                                        keeping unit
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="variantPrice"
+                                        className="form-control"
+                                        value={variation.stock}
+            onChange={(e) => handleVariantChange(index, 'stock', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="removeSpan"
+                                onClick={() => removeVariant(index)}>-</span>
                               </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Price
+                              <div className="form-group uploader-wrapper">
+                                <label htmlFor="Description">
+                                  <span className="text-danger">*</span> Upload Image
                                 </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  value="10"
-                                />
+                                <div className="uploader-wrapper-inner">
+                                  <img
+                                    src={variation.productImage}
+                                    alt="pictures"
+                                  />
+                                  <input type="file" />
+                                </div>
                               </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Stock
-                                  keeping unit
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  value="10"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="form-group uploader-wrapper">
-                          <label htmlFor="Description">
-                            <span className="text-danger">*</span> Upload Image
-                          </label>
-                          <div className="uploader-wrapper-inner">
-                            <img
-                              src="https://emilus.themenate.net/img/thumbs/thumb-7.jpg"
-                              alt="pictures"
-                            />
-                            <input type="file" />
-                          </div>
-                        </div>
-                        <div className="isMinus">
-                          <div className="row">
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Variant
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variant"
-                                  className="form-control"
-                                  value="black"
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Price
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  value="10"
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="form-group">
-                                <label htmlFor=" productName">
-                                  <span className="text-danger">*</span> Stock
-                                  keeping unit
-                                </label>
-                                <input
-                                  type="text"
-                                  name="variantPrice"
-                                  className="form-control"
-                                  value="10"
-                                />
-                              </div>
+                           </div>
+                             
+                              ))
+                  }
+                              <button className="uploader-add-btne" type="button" 
+                              onClick={addEmptyVariant }>
+                                Add field
+                              </button>
                             </div>
                           </div>
-                          <span className="removeSpan">-</span>
-                        </div>
-                        <div className="form-group uploader-wrapper">
-                          <label htmlFor="Description">
-                            <span className="text-danger">*</span> Upload Image
-                          </label>
-                          <div className="uploader-wrapper-inner">
-                            <img
-                              src="https://emilus.themenate.net/img/thumbs/thumb-7.jpg"
-                              alt="pictures"
-                            />
-                            <input type="file" />
-                          </div>
-                        </div>
-                        <button className="uploader-add-btne" type="button">
-                          Add field
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+
+
+                  </div>  
+                  {/* here */}
                 </div>
               </div>
             </div>

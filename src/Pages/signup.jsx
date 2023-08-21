@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ReactComponent as Logo } from "../assets/images/thumbnails/Logo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setEmail, setPassword } from "../actions/userAction";
+import { setEmail, setPassword } from "../reducers/userReducer";
 
 function Signup() {
   const [useremail, setUseremail] = useState("");
@@ -22,8 +22,8 @@ function Signup() {
     } else if (!emailRegex.test(useremail)) {
       alert("Invalid email address");
     } else {
-      dispatch(setEmail(useremail));
-      dispatch(setPassword(userpassword));
+      dispatch(setEmail(String(useremail)));
+      dispatch(setPassword(String(userpassword)));
       Navigate('/login');
     }
 

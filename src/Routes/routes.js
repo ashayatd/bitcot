@@ -7,6 +7,7 @@ import Product from '../../src/Pages/products';
 import Signup from '../../src/Pages/signup';
 import Landing from '../../src/Pages/landing';
 import NotFound from '../../src/Pages/notfound';
+import Auth from '../middleware/auth';
 
 const RoutesPages = () => {
   return (
@@ -15,13 +16,12 @@ const RoutesPages = () => {
         <Route exact path="/" element={<Landing/>} />
         <Route path="/login" element={<Login/>} />
         <Route path="/signup" element={<Signup/>} />
-        <Route path="/product" element={<Product/>} />
-        <Route path="/editproduct" element={<Editproduct/>} />
-        <Route path="/addproduct" element={<Addproduct/>} />
+        <Route path="/product" element={<Auth element={<Product/>} />} />
+        <Route path="/editproduct" element={<Auth element={<Editproduct/>} />} />
+        <Route path="/addproduct" element={<Auth element={<Addproduct/>} />} />
         <Route path="*" element={<NotFound/>} />
       </Routes>
     </Router>
-
   );
 };
 
